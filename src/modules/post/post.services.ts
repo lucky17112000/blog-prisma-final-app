@@ -31,7 +31,7 @@ const getAllPosts = async (payload: { search?: string, tags?: string[] | [], isF
                     }
                 }
 
-            ]
+            ] 
         })
 
     }
@@ -106,6 +106,9 @@ const getPostById = async (postId: string) => {
         const postData = await tx.post.findUnique({
             where: {
                 id: postId
+            },
+            include:{
+                comments:true
             }
         })
         return postData
