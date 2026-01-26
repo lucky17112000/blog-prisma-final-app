@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PostServices } from './post.services';
 import { boolean } from 'better-auth';
 import { postStatus } from '@prisma/client';
+import paginationSortingHelper from '../../helper/paginationSortingHelper';
 
 
 const createPost = async(req:Request , res:Response )=>{
@@ -26,16 +27,37 @@ const getAllPosts = async(req:Request , res:Response )=>{
   const status =  req.query.status as postStatus | undefined  ;
   const authorId = req.query.authorId as string | undefined;
 
+ 
+
+  const {page , limit, skip, sortBy, sortOrder} = paginationSortingHelper(req.query);
+  // console.log(options);
+
+
+
 
   // console.log("Search Query:", search);
   try{
-    const result  = await PostServices.getAllPosts({search:search as string, tags , isFeatured , status , authorId});
+    const result  = await PostServices.getAllPosts({search:search as string, tags , isFeatured , status , authorId , page , limit , skip , sortBy , sortOrder});
     res.status(200).json(result);
 
   }catch(error){
     return res.status(500).json({message:"Internal Server Error"});
   }
 }
+const getPostById = async(req:Request, res:Response)=>{
+  try{
+    const {postId} = req.params;
+    console.log(postId);
+    if(!postId){
+      throw new Error("Post ID is required");
+    }
+
+    const result = await PostServices.getPostById(postId as string);
+    return res.status(200).json(result);
+  }catch(error){
+    return res.status(500).json({message:"Internal Server Error"});
+  }
+}
 export const PostController = {
-    createPost, getAllPosts
+    createPost, getAllPosts, getPostById
 }
