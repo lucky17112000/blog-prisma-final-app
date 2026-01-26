@@ -1,4 +1,4 @@
-import { Post, Prisma } from "@prisma/client";
+import { Post, postStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 
 const createPost = async (data: Omit<Post, "id" | "createdAt" | "updatedAt" | 'authorId'>, userId: string) => {
@@ -11,9 +11,9 @@ const createPost = async (data: Omit<Post, "id" | "createdAt" | "updatedAt" | 'a
     return result;
 
 }
-const getAllPosts = async (payload: { search?: string, tags?: string[] | [] }) => {
+const getAllPosts = async (payload: { search?: string, tags?: string[] | [], isFeatured?: boolean | undefined, status: postStatus | undefined , authorId :string|undefined}) => {
     // console.log("Get All Posts")
-    const andConditions:Prisma.PostWhereInput[] = []
+    const andConditions: Prisma.PostWhereInput[] = []
     if (payload.search) {
         andConditions.push({
             OR: [
@@ -42,12 +42,27 @@ const getAllPosts = async (payload: { search?: string, tags?: string[] | [] }) =
             }
         })
     }
+    if (typeof payload.isFeatured === 'boolean') {
+        andConditions.push({
+            isFeatured: payload.isFeatured
+        })
+    }
+    if (payload.status) {
+        andConditions.push({
+            status: payload.status
+        })
+    }
+    if(payload.authorId){
+        andConditions.push({
+            authorId : payload.authorId
+        })
+    }
     const result = await prisma.post.findMany({
         where: {
 
             AND: andConditions
-                
-            
+
+
 
         }
     });
