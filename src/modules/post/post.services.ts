@@ -1,4 +1,4 @@
-import { Post, postStatus, Prisma } from "@prisma/client";
+import { commentStatus, Post, postStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 
 const createPost = async (data: Omit<Post, "id" | "createdAt" | "updatedAt" | 'authorId'>, userId: string) => {
@@ -31,7 +31,7 @@ const getAllPosts = async (payload: { search?: string, tags?: string[] | [], isF
                     }
                 }
 
-            ] 
+            ]
         })
 
     }
@@ -70,17 +70,15 @@ const getAllPosts = async (payload: { search?: string, tags?: string[] | [], isF
         orderBy: payload.sortBy && payload.sortOrder ?
             {
                 [payload.sortBy]: payload.sortOrder
-            } : { createdAt: 'desc' }
+            } : { createdAt: 'desc' },
+            include:{_count:{select:{comments:true}}}
 
     });
     const total = await prisma.post.count({
         where: {
 
             AND: andConditions
-
-
-
-        },
+},
     })
     return {
         data: result,
@@ -95,7 +93,7 @@ const getAllPosts = async (payload: { search?: string, tags?: string[] | [], isF
 }
 const getPostById = async (postId: string) => {
     const result = await prisma.$transaction(async (tx) => {
-         await tx.post.update({
+        await tx.post.update({
             where: {
                 id: postId
             },
@@ -107,8 +105,29 @@ const getPostById = async (postId: string) => {
             where: {
                 id: postId
             },
-            include:{
-                comments:true
+            include: {
+                comments: {
+                    where: {
+                        parentId: null,
+                        // status:commentStatus.APPROVED
+                    },
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        replies: {
+                            include: {
+                                replies: {
+                                    include: {
+                                        replies: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                _count: {
+                    select: { comments: true }
+                },
+
             }
         })
         return postData
