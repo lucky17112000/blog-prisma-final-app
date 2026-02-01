@@ -137,10 +137,10 @@ const getPostById = async (postId: string) => {
 }
 const getMyPosts = async (authorId: string) => {
     const userInfo = await prisma.user.findUniqueOrThrow({
-        where:{id:authorId},
-        select:{id:true, status:true}
+        where: { id: authorId },
+        select: { id: true, status: true }
     })
-    if(userInfo.status!=='ACTIVE'){
+    if (userInfo.status !== 'ACTIVE') {
         throw new Error('USER NOT ACTIVE');
     }
     const result = await prisma.post.findMany({
@@ -157,7 +157,7 @@ const getMyPosts = async (authorId: string) => {
         _count: {
             id: true
         },
-        where:{
+        where: {
             authorId: authorId
         }
     })
@@ -165,9 +165,35 @@ const getMyPosts = async (authorId: string) => {
         data: result, total
     };
 }
+//post id lagbe and upddated data , author id lagbe
+const updateOwnPost = async (postId: string, data: Partial<Post>, authorId: string) => {
+    // console.log(postId, data, authorId);
+    const postData = await prisma.post.findUniqueOrThrow({
+        where:{
+            id:postId
+        },
+        select:{
+            id:true,
+            authorId:true
+        }
+
+    })
+    if(postData.authorId !== authorId){
+        throw new Error("You are not authorized to update this post");
+    }
+   const result = await prisma.post.update({
+    where:{
+        id:postData.id
+    },
+    data:data
+   })
+   return result;
+
+}
 export const PostServices = {
     createPost,
     getAllPosts,
     getPostById,
-    getMyPosts
+    getMyPosts, 
+    updateOwnPost
 }

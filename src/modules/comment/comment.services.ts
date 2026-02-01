@@ -75,7 +75,7 @@ const deleteComment = async (commentId: string, authorId: string) => {
             id: true
         }
     })
-    console.log(commentData);
+    // console.log(commentData);
     if (!commentData) {
         throw new Error("You are not authorized to delete this comment");
 
@@ -99,7 +99,7 @@ const commentData = await prisma.comment.findFirst({
             id: true
         }
     })
-    console.log(commentData);
+    // console.log(commentData);
     if (!commentData) {
         throw new Error("You are not authorized to update this comment");
 

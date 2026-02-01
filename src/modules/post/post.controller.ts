@@ -71,7 +71,21 @@ const getMyPosts = async(req:Request, res:Response)=>{
     return res.status(500).json({message:"Internal Server Error"});
   }
 }
+const updateOwnPost = async(req:Request, res:Response)=>{
+  try{
+   const user = req.user;
+   const postId = req.params.postId
+   if(!user){
+    return res.status(401).json({message:"Unauthorized"});
+   }
+
+    const result = await PostServices.updateOwnPost(postId as string, req.body , user.id  );
+    return res.status(200).json(result);
+  }catch(error){
+    return res.status(500).json({message:"Internal Server Error"});
+  }
+}
 
 export const PostController = {
-    createPost, getAllPosts, getPostById, getMyPosts
+    createPost, getAllPosts, getPostById, getMyPosts, updateOwnPost
 }
