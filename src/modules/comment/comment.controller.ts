@@ -48,9 +48,11 @@ const getCommentsByAuthor = async(req:Request , res:Response )=>{
 
 const deleteComment = async(req:Request , res:Response )=>{
   try{
-    const {authorId} = req.params
+    const user = req.user;
+    const {commentId} = req.params;
    
-    const result  = await CommentServices.deleteComment();
+   
+    const result  = await CommentServices.deleteComment(commentId as string, user?.id as string);
     res.status(201).json(result);
 
 
@@ -60,9 +62,29 @@ const deleteComment = async(req:Request , res:Response )=>{
   }
 // res.send("create Post");
 }
+
+
+const updateComment = async(req:Request , res:Response )=>{
+  try{
+    const user = req.user;
+    const {commentId} = req.params;
+   
+   
+    const result  = await CommentServices.updateComment(commentId as string,req.body, user?.id as string);
+    res.status(201).json(result);
+
+
+  }catch(error){
+    res.status(500).json({message:"Internal Server Error"});
+
+  }
+// res.send("create Post");
+}
+
 export const CommentController = {
     createComment,
     getCommentsById,
     getCommentsByAuthor,
-    deleteComment
+    deleteComment,
+    updateComment
 }

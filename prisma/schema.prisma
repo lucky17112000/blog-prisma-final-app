@@ -43,10 +43,10 @@ model Comment {
   authorId  String
   postId    String
   parentId  String?
-  parent    Comment?      @relation("CommentToComment", fields: [parentId], references: [id])
+  parent    Comment?      @relation("CommentToComment", fields: [parentId], references: [id] ,  onDelete:Cascade)
   replies   Comment[]     @relation("CommentToComment")
   status    commentStatus @default(APPROVED)
-  post      Post          @relation(fields: [postId], references: [id])
+  post      Post          @relation(fields: [postId], references: [id] , onDelete: Cascade)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   //it changes the table name to "comments" instead of default "Comment"
