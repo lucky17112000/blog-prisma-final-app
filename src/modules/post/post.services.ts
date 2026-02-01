@@ -1,5 +1,6 @@
 import { commentStatus, Post, postStatus, Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
+import { promise } from "better-auth";
 
 const createPost = async (data: Omit<Post, "id" | "createdAt" | "updatedAt" | 'authorId'>, userId: string) => {
     const result = await prisma.post.create({
@@ -168,60 +169,122 @@ const getMyPosts = async (authorId: string) => {
 //post id lagbe and upddated data , author id lagbe
 //user ->shudu tar nijer postupdate korte parbe but feature update korte parbe na 
 //admin -> sobar post update korte patrbe sobkichu update korte parbe
-const updateOwnPost = async (postId: string, data: Partial<Post>, authorId: string , isAdmin:boolean) => {
+const updateOwnPost = async (postId: string, data: Partial<Post>, authorId: string, isAdmin: boolean) => {
     // console.log(postId, data, authorId);
     const postData = await prisma.post.findUniqueOrThrow({
-        where:{
-            id:postId
+        where: {
+            id: postId
         },
-        select:{
-            id:true,
-            authorId:true
+        select: {
+            id: true,
+            authorId: true
         }
 
     })
-    if(!isAdmin && postData.authorId !== authorId){
+    if (!isAdmin && postData.authorId !== authorId) {
         throw new Error("You are not authorized to update this post");
     }
-    if(!isAdmin){
+    if (!isAdmin) {
         //normal user feature update korte parbe na
         delete data.isFeatured;
     }
-   const result = await prisma.post.update({
-    where:{
-        id:postData.id
-    },
-    data:data
-   })
-   return result;
+    const result = await prisma.post.update({
+        where: {
+            id: postData.id
+        },
+        data: data
+    })
+    return result;
 
 }
 //user->nijer created post delete korte parbe
 //admin->sobar post delete korte parbe
-const deleteOwnPost = async(postId:string, authodId:string, isAdmin:boolean)=>{
+const deleteOwnPost = async (postId: string, authodId: string, isAdmin: boolean) => {
     const postData = await prisma.post.findUniqueOrThrow({
-        where:{
-            id:postId
+        where: {
+            id: postId
         },
-        select:{
-            id:true,
-            authorId:true
+        select: {
+            id: true,
+            authorId: true
         }
     })
-    if(!isAdmin && postData.authorId !== authodId){
+    if (!isAdmin && postData.authorId !== authodId) {
         throw new Error("You are not authorized to delete this post");
     }
     return await prisma.post.delete({
-        where:{
-            id:postData.id
+        where: {
+            id: postData.id
         }
     })
+}
+//ekhane amra multiple query chalabo tai transaction use korbo
+const getStats = async () => {
+    //post count,total publised post, draft post, comment, views
+    return await prisma.$transaction(async (tx) => {
+        const [totalPosts, publishedPosts, draftPosts, archivedPosts, totalComments , approvedComment , totalUser, adminCount, userCount, totalViews] = await Promise.all([
+
+            await tx.post.count(),
+            await tx.post.count({
+                where: {
+                    status: postStatus.PUBLISHED
+                }
+            }),
+            await tx.post.count({
+                where: {
+                    status: postStatus.DRAFT
+                }
+            }),
+            await tx.post.count({
+                where: {
+                    status: postStatus.ARCHIVED
+                }
+            }),
+            await tx.comment.count(),
+            await tx.comment.count({ 
+                where:{
+                    status:commentStatus.APPROVED
+                }
+            }),
+            await tx.user.count(),
+            await tx.user.count({
+                where:{
+                    role:"ADMIN"
+                }
+            }),
+            await tx.user.count({
+                where:{
+                    role:"USER"
+                }
+            }),
+            await tx.post.aggregate({
+                _sum:{
+                    views:true
+                }
+            })
+        ])
+
+        return {
+            totalPosts,
+            publishedPosts,
+            draftPosts,
+            archivedPosts,
+            totalComments,
+            approvedComment,
+            totalUser,
+            adminCount,
+            userCount,
+            totalViews:totalViews._sum.views||0
+        }
+    })
+
 }
 export const PostServices = {
     createPost,
     getAllPosts,
     getPostById,
-    getMyPosts, 
+    getMyPosts,
     updateOwnPost,
-    deleteOwnPost
+    deleteOwnPost,
+    getStats
 }
