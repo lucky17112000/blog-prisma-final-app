@@ -12,33 +12,33 @@ function errorHandler(err: any, req: Request, res: Response, next: NextFunction)
     //prisma client validation error
     if (err instanceof Prisma.PrismaClientValidationError) {
         statusCode = 400;
-     
+
         errorMessage = "You provide incorrect field or missing field";
 
     }
     //prisma client known request error
-     else if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        if(err.code ==="p2025"){
+    else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === "p2025") {
             statusCode = 404;
             errorMessage = "The requested resource was not found";
-        }else if (err.code === "P2002") {
+        } else if (err.code === "P2002") {
             statusCode = 409;
             errorMessage = "Unique constraint failed";
-        }else if(err.code === "P2003"){
-            statusCode = 400; 
+        } else if (err.code === "P2003") {
+            statusCode = 400;
             errorMessage = "Foreign key constraint failed";
         }
-    }else if(err instanceof Prisma.PrismaClientUnknownRequestError){
+    } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
         statusCode = 500;
         errorMessage = "An unknown error occurred with the database client";
-    }else if (err instanceof Prisma.PrismaClientRustPanicError) {
+    } else if (err instanceof Prisma.PrismaClientRustPanicError) {
         statusCode = 500;
         errorMessage = "A fatal error occurred in the database engine";
-    }else if(err instanceof Prisma.PrismaClientInitializationError){
-        if(err.errorCode ==='P1000' ){
+    } else if (err instanceof Prisma.PrismaClientInitializationError) {
+        if (err.errorCode === 'P1000') {
             statusCode = 401;
             errorMessage = "Authentictaion failed. please cheak your database connection settings";
-        }else if(err.errorCode ==='P1001'){
+        } else if (err.errorCode === 'P1001') {
             statusCode = 503;
             errorMessage = "Database server is not available";
         }
