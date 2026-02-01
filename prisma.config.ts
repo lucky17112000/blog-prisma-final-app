@@ -6,11 +6,11 @@ import { defineConfig, env } from "prisma/config";
 // import process from "process";
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: "prisma/schema",
   migrations: {
     path: "prisma/migrations",
   },
-  engine: "classic",
+  // engine: "classic",
   datasource: {
     // url: env("DATABASE_URL"),
     url: process.env["DATABASE_URL"] || "",
