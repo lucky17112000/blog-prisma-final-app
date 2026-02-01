@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response ,  } from 'express';
 import { PostServices } from './post.services';
 import { boolean } from 'better-auth';
 import { postStatus } from '@prisma/client';
@@ -6,7 +6,7 @@ import paginationSortingHelper from '../../helper/paginationSortingHelper';
 import { userRole } from '../../middlware/auth';
 
 
-const createPost = async (req: Request, res: Response) => {
+const createPost = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -16,7 +16,8 @@ const createPost = async (req: Request, res: Response) => {
 
 
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    next(error);
+    
 
   }
   // res.send("create Post");
