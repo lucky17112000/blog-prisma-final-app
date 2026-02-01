@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response ,  } from 'express';
+import { NextFunction, Request, Response, } from 'express';
 import { PostServices } from './post.services';
 import { boolean } from 'better-auth';
 import { postStatus } from '@prisma/client';
@@ -17,7 +17,7 @@ const createPost = async (req: Request, res: Response, next: NextFunction) => {
 
   } catch (error) {
     next(error);
-    
+
 
   }
   // res.send("create Post");
@@ -73,7 +73,7 @@ const getMyPosts = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
-const updateOwnPost = async (req: Request, res: Response) => {
+const updateOwnPost = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     const postId = req.params.postId
@@ -86,7 +86,7 @@ const updateOwnPost = async (req: Request, res: Response) => {
     const result = await PostServices.updateOwnPost(postId as string, req.body, user.id, isAdmin);
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json({ message: "Internal Server Error" });
+    next(error);
   }
 }
 
