@@ -166,7 +166,9 @@ const getMyPosts = async (authorId: string) => {
     };
 }
 //post id lagbe and upddated data , author id lagbe
-const updateOwnPost = async (postId: string, data: Partial<Post>, authorId: string) => {
+//user ->shudu tar nijer postupdate korte parbe but feature update korte parbe na 
+//admin -> sobar post update korte patrbe sobkichu update korte parbe
+const updateOwnPost = async (postId: string, data: Partial<Post>, authorId: string , isAdmin:boolean) => {
     // console.log(postId, data, authorId);
     const postData = await prisma.post.findUniqueOrThrow({
         where:{
@@ -178,8 +180,12 @@ const updateOwnPost = async (postId: string, data: Partial<Post>, authorId: stri
         }
 
     })
-    if(postData.authorId !== authorId){
+    if(!isAdmin && postData.authorId !== authorId){
         throw new Error("You are not authorized to update this post");
+    }
+    if(!isAdmin){
+        //normal user feature update korte parbe na
+        delete data.isFeatured;
     }
    const result = await prisma.post.update({
     where:{

@@ -3,6 +3,7 @@ import { PostServices } from './post.services';
 import { boolean } from 'better-auth';
 import { postStatus } from '@prisma/client';
 import paginationSortingHelper from '../../helper/paginationSortingHelper';
+import { userRole } from '../../middlware/auth';
 
 
 const createPost = async(req:Request , res:Response )=>{
@@ -75,11 +76,13 @@ const updateOwnPost = async(req:Request, res:Response)=>{
   try{
    const user = req.user;
    const postId = req.params.postId
+   const isAdmin = (req.user?.role ===userRole.ADMIN)
+   console.log(user);
    if(!user){
     return res.status(401).json({message:"Unauthorized"});
    }
 
-    const result = await PostServices.updateOwnPost(postId as string, req.body , user.id  );
+    const result = await PostServices.updateOwnPost(postId as string, req.body , user.id  , isAdmin );
     return res.status(200).json(result);
   }catch(error){
     return res.status(500).json({message:"Internal Server Error"});
