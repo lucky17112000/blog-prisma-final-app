@@ -112,11 +112,32 @@ const commentData = await prisma.comment.findFirst({
     })
 
 }
+const modarateComment=async(commentId:string, data:{status:"APPROVED"|"REJECTED"})=>{
+  const commentData =await prisma.comment.findUniqueOrThrow({
+    where:{
+        id:commentId
+    },
+    select:{
+        id:true,
+        status:true
+    }
+  })
+  if(commentData.status === data.status){
+    throw new Error
+  }
+  return await prisma.comment.update({
+    where:{
+        id:commentData.id
+    },
+    data:data
+  })
+}
 
 export const CommentServices = {
     createComment,
     getCommentsById,
     getCommentsByAuthor,
     deleteComment,
-    updateComment
+    updateComment,
+    modarateComment
 }

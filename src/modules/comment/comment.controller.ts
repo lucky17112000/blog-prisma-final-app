@@ -81,10 +81,30 @@ const updateComment = async(req:Request , res:Response )=>{
 // res.send("create Post");
 }
 
+const modarateComment = async(req:Request , res:Response )=>{
+  try{
+
+    
+    const {commentId} = req.params;
+   
+   
+    const result  = await CommentServices.modarateComment(commentId as string , req.body);
+    res.status(201).json(result);
+
+
+  }catch(error){
+    const errorMessage = (error instanceof Error)?error.message:"Comment Alreday Up to Date"
+    res.status(500).json({message:"Internal Server Error"});
+
+  }
+// res.send("create Post");
+}
+
 export const CommentController = {
     createComment,
     getCommentsById,
     getCommentsByAuthor,
     deleteComment,
-    updateComment
+    updateComment,
+    modarateComment
 }
