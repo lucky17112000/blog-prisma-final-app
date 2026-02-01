@@ -71,14 +71,14 @@ const getAllPosts = async (payload: { search?: string, tags?: string[] | [], isF
             {
                 [payload.sortBy]: payload.sortOrder
             } : { createdAt: 'desc' },
-            include:{_count:{select:{comments:true}}}
+        include: { _count: { select: { comments: true } } }
 
     });
     const total = await prisma.post.count({
         where: {
 
             AND: andConditions
-},
+        },
     })
     return {
         data: result,
@@ -135,15 +135,35 @@ const getPostById = async (postId: string) => {
     return result;
 
 }
-const getMyPosts = async(authorId:string)=>{
+const getMyPosts = async (authorId: string) => {
+    const userInfo = await prisma.user.findUniqueOrThrow({
+        where:{id:authorId},
+        select:{id:true, status:true}
+    })
+    if(userInfo.status!=='ACTIVE'){
+        throw new Error('USER NOT ACTIVE');
+    }
     const result = await prisma.post.findMany({
-        where:{
-            authorId:authorId
+        where: {
+            authorId: authorId
         },
-        orderBy:{createdAt:'desc'}
+        orderBy: { createdAt: 'desc' },
+        include: { _count: { select: { comments: true } } }
+
 
     })
-    return result;
+    //post e rtotal count
+    const total = await prisma.post.aggregate({
+        _count: {
+            id: true
+        },
+        where:{
+            authorId: authorId
+        }
+    })
+    return {
+        data: result, total
+    };
 }
 export const PostServices = {
     createPost,
