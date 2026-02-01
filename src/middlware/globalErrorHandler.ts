@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma";
+
 // import { error } from "node:console";
 function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
     // if(res.headersSent){
@@ -27,6 +27,20 @@ function errorHandler(err: any, req: Request, res: Response, next: NextFunction)
         }else if(err.code === "P2003"){
             statusCode = 400; 
             errorMessage = "Foreign key constraint failed";
+        }
+    }else if(err instanceof Prisma.PrismaClientUnknownRequestError){
+        statusCode = 500;
+        errorMessage = "An unknown error occurred with the database client";
+    }else if (err instanceof Prisma.PrismaClientRustPanicError) {
+        statusCode = 500;
+        errorMessage = "A fatal error occurred in the database engine";
+    }else if(err instanceof Prisma.PrismaClientInitializationError){
+        if(err.errorCode ==='P1000' ){
+            statusCode = 401;
+            errorMessage = "Authentictaion failed. please cheak your database connection settings";
+        }else if(err.errorCode ==='P1001'){
+            statusCode = 503;
+            errorMessage = "Database server is not available";
         }
     }
     res.status(statusCode).json({ message: errorMessage, error: errorDetails });
