@@ -89,6 +89,24 @@ const updateOwnPost = async(req:Request, res:Response)=>{
   }
 }
 
+
+const deleteOwnPost = async(req:Request, res:Response)=>{
+  try{
+   const user = req.user;
+   const postId = req.params.postId
+   const isAdmin = (req.user?.role ===userRole.ADMIN)
+   console.log(user);
+   if(!user){
+    return res.status(401).json({message:"Unauthorized"});
+   }
+
+    const result = await PostServices.deleteOwnPost(postId as string, user.id  , isAdmin );
+    return res.status(200).json(result);
+  }catch(error){
+    return res.status(500).json({message:"Internal Server Error"});
+  }
+}
+
 export const PostController = {
-    createPost, getAllPosts, getPostById, getMyPosts, updateOwnPost
+    createPost, getAllPosts, getPostById, getMyPosts, updateOwnPost, deleteOwnPost
 }
